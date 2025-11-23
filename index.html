@@ -1,0 +1,386 @@
+<!DOCTYPE html><html lang="zh-CN"><head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>永恒的回忆 - 纪念我的爱人</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&amp;family=Noto+Sans+SC:wght@300;400;500&amp;family=ZCOOL+XiaoWei&amp;display=swap" rel="stylesheet"/>
+    
+    <style>
+        :root {
+            --primary-pink: #FFE4E1;
+            --warm-gold: #F0E68C;
+            --rose-gold: #E8B4B8;
+            --cream: #FFFEF7;
+            --soft-gray: #F8F8FF;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--warm-gold) 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        .hero-title {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(45deg, #E8B4B8, #F0E68C, #E8B4B8);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .memory-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(232, 180, 184, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .memory-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(232, 180, 184, 0.4);
+        }
+        
+        .photo-frame {
+            position: relative;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .candle {
+            width: 40px;
+            height: 80px;
+            background: linear-gradient(to top, #FFF8DC, #F5DEB3);
+            border-radius: 20px 20px 5px 5px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .candle:hover {
+            transform: scale(1.05);
+        }
+        
+        .flame {
+            width: 12px;
+            height: 20px;
+            background: radial-gradient(circle, #FFD700, #FF6347);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: flicker 2s ease-in-out infinite alternate;
+            opacity: 0;
+        }
+        
+        .flame.lit {
+            opacity: 1;
+        }
+        
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-2deg); }
+            100% { transform: translateX(-50%) scale(1.1) rotate(2deg); }
+        }
+        
+        .heart {
+            position: absolute;
+            color: #E8B4B8;
+            font-size: 20px;
+            pointer-events: none;
+            animation: floatUp 3s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1.5);
+            }
+        }
+        
+        .editable {
+            cursor: text;
+            border: 2px dashed transparent;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-mode .editable {
+            border-color: var(--rose-gold);
+            background: rgba(232, 180, 184, 0.1);
+        }
+        
+        .edit-mode .editable:hover {
+            background: rgba(232, 180, 184, 0.2);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 12px;
+            height: 12px;
+            background: var(--rose-gold);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--rose-gold);
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 22px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: linear-gradient(to bottom, var(--rose-gold), transparent);
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .glow {
+            box-shadow: 0 0 20px rgba(232, 180, 184, 0.6);
+        }
+        
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--rose-gold);
+            transition: left 0.3s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 0;
+        }
+    </style>
+<script src="https://statics.moonshot.cn/sdk/preview-widgets.min.js" defer=""></script></head>
+<body>
+    <!-- 粒子背景画布 -->
+    <div id="particles-canvas"></div>
+    
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-rose-200">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-pink-300 to-rose-400 rounded-full"></div>
+                    <h1 class="text-xl font-bold text-gray-800" style="font-family: &#39;ZCOOL XiaoWei&#39;;">永恒的爱</h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">首页</a>
+                    <a href="photos.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">照片管理</a>
+                    <a href="memories.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">回忆记录</a>
+                    <a href="settings.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">设置</a>
+                    <button id="editToggle" class="bg-rose-400 hover:bg-rose-500 text-white px-4 py-2 rounded-full transition-colors">
+                        编辑模式
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero区域 -->
+    <section class="relative min-h-screen flex items-center justify-center pt-20 px-4">
+        <div class="absolute inset-0 z-0">
+            <img src="hero-memorial.png" alt="纪念背景" class="w-full h-full object-cover opacity-60"/>
+        </div>
+        
+        <div class="relative z-10 text-center max-w-4xl mx-auto">
+            <h1 class="hero-title text-6xl md:text-8xl font-bold mb-6 editable" data-field="main-title">
+                永恒的回忆
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-700 mb-8 editable" data-field="subtitle">
+                那些美好的时光，永远留在我们心中
+            </p>
+            <div class="flex items-center justify-center space-x-8 mb-12">
+                <div class="candle" id="candle1">
+                    <div class="flame" id="flame1"></div>
+                </div>
+                <div class="candle" id="candle2">
+                    <div class="flame" id="flame2"></div>
+                </div>
+                <div class="candle" id="candle3">
+                    <div class="flame" id="flame3"></div>
+                </div>
+            </div>
+            <button class="bg-white/80 hover:bg-white text-rose-500 px-8 py-3 rounded-full font-medium transition-all transform hover:scale-105 glow">
+                开始回忆之旅
+            </button>
+        </div>
+    </section>
+
+    <!-- 照片展示区 -->
+    <section class="py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 text-gray-800" style="font-family: &#39;Noto Serif SC&#39;;">
+                珍贵瞬间
+            </h2>
+            
+            <div class="splide" id="photo-carousel">
+                <div class="splide__track">
+                    <ul class="splide__list" id="photo-list">
+                        <!-- 照片将通过JavaScript动态加载 -->
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <a href="photos.html" class="inline-block bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors">
+                    管理照片
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 时间轴回忆 -->
+    <section class="py-20 px-4 bg-white/50">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 text-gray-800" style="font-family: &#39;Noto Serif SC&#39;;">
+                美好时光
+            </h2>
+            
+            <div class="space-y-8" id="timeline-container">
+                <div class="timeline-item memory-card p-6 rounded-lg">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2 editable" data-field="memory-title-1">
+                                第一次相遇
+                            </h3>
+                            <p class="text-gray-600 mb-3 editable" data-field="memory-date-1">
+                                2023年3月15日
+                            </p>
+                            <p class="text-gray-700 leading-relaxed editable" data-field="memory-content-1">
+                                那天阳光正好，你在咖啡馆的角落里看书，阳光透过窗户洒在你的头发上，那一刻我知道我遇到了生命中最重要的人。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item memory-card p-6 rounded-lg">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2 editable" data-field="memory-title-2">
+                                共同的旅行
+                            </h3>
+                            <p class="text-gray-600 mb-3 editable" data-field="memory-date-2">
+                                2023年7月20日
+                            </p>
+                            <p class="text-gray-700 leading-relaxed editable" data-field="memory-content-2">
+                                我们一起去了海边，看着日出日落，听着海浪的声音。那些美好的时光，现在回想起来依然让人心动。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item memory-card p-6 rounded-lg">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2 editable" data-field="memory-title-3">
+                                温馨的日常
+                            </h3>
+                            <p class="text-gray-600 mb-3 editable" data-field="memory-date-3">
+                                2023年12月1日
+                            </p>
+                            <p class="text-gray-700 leading-relaxed editable" data-field="memory-content-3">
+                                即使是平凡的日子，有你的陪伴也变得特别。我们一起做饭、看电影、聊天到深夜，这些简单的幸福是最珍贵的回忆。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <a href="memories.html" class="inline-block bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors">
+                    添加回忆
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 情感表达区域 -->
+    <section class="py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8 text-gray-800" style="font-family: &#39;Noto Serif SC&#39;;">
+                心中的话语
+            </h2>
+            
+            <div class="memory-card p-8 rounded-lg">
+                <div class="text-6xl mb-4">💝</div>
+                <p class="text-lg text-gray-700 leading-relaxed mb-6 editable" data-field="heart-message">
+                    无论时间如何流逝，你的笑容永远在我心中。愿这些回忆如星光般永远闪耀，照亮我前行的路。
+                </p>
+                <div class="flex items-center justify-center space-x-4">
+                    <span class="text-2xl">🕯️</span>
+                    <span class="text-gray-600">永远怀念</span>
+                    <span class="text-2xl">🕯️</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="text-gray-300">© 2024 永恒的爱 - 用心记录每一份美好</p>
+            <p class="text-sm text-gray-400 mt-2">愿爱永存，回忆常在</p>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+
+</body></html>

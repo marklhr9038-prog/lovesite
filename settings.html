@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 永恒的爱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-pink: #FFE4E1;
+            --warm-gold: #F0E68C;
+            --rose-gold: #E8B4B8;
+            --cream: #FFFEF7;
+            --soft-gray: #F8F8FF;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--warm-gold) 100%);
+            min-height: 100vh;
+        }
+        
+        .settings-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(232, 180, 184, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .settings-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(232, 180, 184, 0.3);
+        }
+        
+        .theme-option {
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .theme-option.selected {
+            border-color: var(--rose-gold);
+            box-shadow: 0 0 20px rgba(232, 180, 184, 0.5);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: var(--rose-gold);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(30px);
+        }
+        
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--rose-gold);
+            transition: left 0.3s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 0;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-rose-200">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-pink-300 to-rose-400 rounded-full"></div>
+                    <h1 class="text-xl font-bold text-gray-800" style="font-family: 'ZCOOL XiaoWei';">永恒的爱</h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">首页</a>
+                    <a href="photos.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">照片管理</a>
+                    <a href="memories.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">回忆记录</a>
+                    <a href="settings.html" class="nav-link text-rose-500 font-medium">设置</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="pt-20 px-4 pb-12">
+        <div class="max-w-4xl mx-auto">
+            <!-- 页面标题 -->
+            <div class="text-center mb-12 pt-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4" style="font-family: 'Noto Serif SC';">
+                    个性化设置
+                </h1>
+                <p class="text-lg text-gray-600">
+                    定制您的纪念网站体验
+                </p>
+            </div>
+
+            <!-- 设置选项 -->
+            <div class="space-y-8">
+                <!-- 主题设置 -->
+                <div class="settings-card p-8 rounded-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                        🎨 主题设置
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="theme-option rounded-lg p-4 text-center" data-theme="warm-rose">
+                            <div class="w-full h-20 rounded-lg mb-3" style="background: linear-gradient(135deg, #FFE4E1 0%, #F0E68C 100%);"></div>
+                            <h3 class="font-medium text-gray-800">温暖玫瑰</h3>
+                            <p class="text-sm text-gray-600">当前主题</p>
+                        </div>
+                        
+                        <div class="theme-option rounded-lg p-4 text-center" data-theme="soft-blue">
+                            <div class="w-full h-20 rounded-lg mb-3" style="background: linear-gradient(135deg, #E6F3FF 0%, #B8E6B8 100%);"></div>
+                            <h3 class="font-medium text-gray-800">柔和蓝绿</h3>
+                            <p class="text-sm text-gray-600">宁静致远</p>
+                        </div>
+                        
+                        <div class="theme-option rounded-lg p-4 text-center" data-theme="golden-sunset">
+                            <div class="w-full h-20 rounded-lg mb-3" style="background: linear-gradient(135deg, #FFF8DC 0%, #DEB887 100%);"></div>
+                            <h3 class="font-medium text-gray-800">金色夕阳</h3>
+                            <p class="text-sm text-gray-600">温馨回忆</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-rose-50 p-4 rounded-lg">
+                        <p class="text-sm text-gray-700">
+                            💡 提示：选择您喜欢的主题色彩，让纪念网站更符合您的心情和回忆氛围。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 显示设置 -->
+                <div class="settings-card p-8 rounded-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                        👁️ 显示设置
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-gray-800">动画效果</h3>
+                                <p class="text-sm text-gray-600">启用页面动画和过渡效果</p>
+                            </div>
+                            <div class="toggle-switch active" id="animationToggle"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-gray-800">粒子背景</h3>
+                                <p class="text-sm text-gray-600">显示动态粒子背景效果</p>
+                            </div>
+                            <div class="toggle-switch active" id="particleToggle"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-gray-800">爱心动画</h3>
+                                <p class="text-sm text-gray-600">点击页面时的爱心飘散效果</p>
+                            </div>
+                            <div class="toggle-switch active" id="heartToggle"></div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-gray-800">自动播放音乐</h3>
+                                <p class="text-sm text-gray-600">页面加载时自动播放背景音乐</p>
+                            </div>
+                            <div class="toggle-switch" id="musicToggle"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据管理 -->
+                <div class="settings-card p-8 rounded-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                        💾 数据管理
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <h3 class="font-medium text-gray-800">导出数据</h3>
+                            <p class="text-sm text-gray-600 mb-4">将您的所有回忆和照片数据导出为文件</p>
+                            <button class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors w-full" onclick="exportAllData()">
+                                📤 导出所有数据
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <h3 class="font-medium text-gray-800">导入数据</h3>
+                            <p class="text-sm text-gray-600 mb-4">从备份文件恢复您的数据</p>
+                            <button class="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-full transition-colors w-full" onclick="importAllData()">
+                                📥 导入数据
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h3 class="font-medium text-red-800 mb-2">⚠️ 危险操作</h3>
+                            <p class="text-sm text-red-600 mb-4">此操作将删除所有数据且无法恢复</p>
+                            <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full transition-colors" onclick="resetAllData()">
+                                🗑️ 重置所有数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 关于信息 -->
+                <div class="settings-card p-8 rounded-lg">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                        ℹ️ 关于网站
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-medium text-gray-800">网站名称</h3>
+                            <p class="text-gray-600">永恒的爱 - 纪念网站</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-medium text-gray-800">版本</h3>
+                            <p class="text-gray-600">v1.0.0</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-medium text-gray-800">创建时间</h3>
+                            <p class="text-gray-600">2024年11月23日</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-medium text-gray-800">功能特色</h3>
+                            <ul class="text-gray-600 text-sm space-y-1 mt-2">
+                                <li>• 一键编辑功能，随时更新内容</li>
+                                <li>• 照片上传和管理系统</li>
+                                <li>• 回忆记录和分类管理</li>
+                                <li>• 本地数据存储，保护隐私</li>
+                                <li>• 温馨的设计风格，营造美好氛围</li>
+                                <li>• 响应式设计，支持各种设备</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 px-4 mt-12">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="text-gray-300">© 2024 永恒的爱 - 用心记录每一份美好</p>
+            <p class="text-sm text-gray-400 mt-2">愿爱永存，回忆常在</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let settings = {
+            theme: 'warm-rose',
+            animations: true,
+            particles: true,
+            hearts: true,
+            music: false
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            setupEventListeners();
+        });
+
+        // 加载设置
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('memorialSettings');
+            if (savedSettings) {
+                settings = { ...settings, ...JSON.parse(savedSettings) };
+            }
+            
+            // 应用设置
+            applySettings();
+        }
+
+        // 应用设置
+        function applySettings() {
+            // 主题设置
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('selected', option.dataset.theme === settings.theme);
+            });
+            
+            // 开关设置
+            document.getElementById('animationToggle').classList.toggle('active', settings.animations);
+            document.getElementById('particleToggle').classList.toggle('active', settings.particles);
+            document.getElementById('heartToggle').classList.toggle('active', settings.hearts);
+            document.getElementById('musicToggle').classList.toggle('active', settings.music);
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 主题选择
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    settings.theme = this.dataset.theme;
+                    applySettings();
+                    saveSettings();
+                    showToast('主题已更新');
+                });
+            });
+            
+            // 开关切换
+            document.getElementById('animationToggle').addEventListener('click', function() {
+                settings.animations = !settings.animations;
+                applySettings();
+                saveSettings();
+                showToast(`动画效果已${settings.animations ? '开启' : '关闭'}`);
+            });
+            
+            document.getElementById('particleToggle').addEventListener('click', function() {
+                settings.particles = !settings.particles;
+                applySettings();
+                saveSettings();
+                showToast(`粒子背景已${settings.particles ? '开启' : '关闭'}`);
+            });
+            
+            document.getElementById('heartToggle').addEventListener('click', function() {
+                settings.hearts = !settings.hearts;
+                applySettings();
+                saveSettings();
+                showToast(`爱心动画已${settings.hearts ? '开启' : '关闭'}`);
+            });
+            
+            document.getElementById('musicToggle').addEventListener('click', function() {
+                settings.music = !settings.music;
+                applySettings();
+                saveSettings();
+                showToast(`背景音乐已${settings.music ? '开启' : '关闭'}`);
+            });
+        }
+
+        // 保存设置
+        function saveSettings() {
+            localStorage.setItem('memorialSettings', JSON.stringify(settings));
+        }
+
+        // 导出所有数据
+        function exportAllData() {
+            const data = {
+                settings: settings,
+                photos: JSON.parse(localStorage.getItem('memorialPhotos') || '[]'),
+                memories: JSON.parse(localStorage.getItem('memorialMemories') || '[]'),
+                content: JSON.parse(localStorage.getItem('memorialContent') || '{}'),
+                candleStates: JSON.parse(localStorage.getItem('candleStates') || '{}'),
+                exportDate: new Date().toISOString(),
+                version: '1.0.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `memorial-website-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('数据导出成功');
+        }
+
+        // 导入所有数据
+        function importAllData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            
+                            // 验证文件格式
+                            if (!data.version || !data.exportDate) {
+                                alert('文件格式不正确，请选择有效的备份文件');
+                                return;
+                            }
+                            
+                            if (confirm('导入数据将覆盖现有数据，确定要继续吗？')) {
+                                // 导入设置
+                                if (data.settings) {
+                                    settings = data.settings;
+                                    localStorage.setItem('memorialSettings', JSON.stringify(settings));
+                                }
+                                
+                                // 导入照片
+                                if (data.photos) {
+                                    localStorage.setItem('memorialPhotos', JSON.stringify(data.photos));
+                                }
+                                
+                                // 导入回忆
+                                if (data.memories) {
+                                    localStorage.setItem('memorialMemories', JSON.stringify(data.memories));
+                                }
+                                
+                                // 导入内容
+                                if (data.content) {
+                                    localStorage.setItem('memorialContent', JSON.stringify(data.content));
+                                }
+                                
+                                // 导入蜡烛状态
+                                if (data.candleStates) {
+                                    localStorage.setItem('candleStates', JSON.stringify(data.candleStates));
+                                }
+                                
+                                showToast('数据导入成功，页面将刷新');
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 2000);
+                            }
+                        } catch (error) {
+                            alert('文件解析失败，请检查文件格式');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        // 重置所有数据
+        function resetAllData() {
+            if (confirm('确定要重置所有数据吗？此操作将删除所有照片、回忆和设置，且无法恢复。')) {
+                if (confirm('请再次确认：这将永久删除所有数据！')) {
+                    localStorage.clear();
+                    showToast('所有数据已重置，页面将刷新');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
+            }
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            anime({
+                targets: toast,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: toast,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    duration: 300,
+                    easing: 'easeInQuart',
+                    complete: () => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }
+                });
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

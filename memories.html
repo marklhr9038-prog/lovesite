@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回忆记录 - 永恒的爱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-pink: #FFE4E1;
+            --warm-gold: #F0E68C;
+            --rose-gold: #E8B4B8;
+            --cream: #FFFEF7;
+            --soft-gray: #F8F8FF;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--warm-gold) 100%);
+            min-height: 100vh;
+        }
+        
+        .memory-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(232, 180, 184, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .memory-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(232, 180, 184, 0.3);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 12px;
+            height: 12px;
+            background: var(--rose-gold);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px var(--rose-gold);
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 22px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: linear-gradient(to bottom, var(--rose-gold), transparent);
+        }
+        
+        .timeline-item:last-child::after {
+            display: none;
+        }
+        
+        .mood-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .mood-option {
+            padding: 6px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .mood-option:hover {
+            border-color: var(--rose-gold);
+            background: rgba(232, 180, 184, 0.1);
+        }
+        
+        .mood-option.selected {
+            border-color: var(--rose-gold);
+            background: var(--rose-gold);
+            color: white;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            min-height: 44px;
+            align-items: center;
+        }
+        
+        .tag-chip {
+            background: var(--rose-gold);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .tag-chip button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--rose-gold);
+            transition: left 0.3s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 0;
+        }
+        
+        .search-highlight {
+            background: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(232, 180, 184, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-rose-200">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-pink-300 to-rose-400 rounded-full"></div>
+                    <h1 class="text-xl font-bold text-gray-800" style="font-family: 'ZCOOL XiaoWei';">永恒的爱</h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">首页</a>
+                    <a href="photos.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">照片管理</a>
+                    <a href="memories.html" class="nav-link text-rose-500 font-medium">回忆记录</a>
+                    <a href="settings.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">设置</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="pt-20 px-4 pb-12">
+        <div class="max-w-6xl mx-auto">
+            <!-- 页面标题 -->
+            <div class="text-center mb-12 pt-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4" style="font-family: 'Noto Serif SC';">
+                    美好回忆记录
+                </h1>
+                <p class="text-lg text-gray-600">
+                    记录珍贵的时刻和温暖的回忆
+                </p>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stats-card p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-rose-500 mb-2" id="totalMemories">0</div>
+                    <div class="text-gray-600">总回忆数</div>
+                </div>
+                <div class="stats-card p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-rose-500 mb-2" id="thisMonthMemories">0</div>
+                    <div class="text-gray-600">本月新增</div>
+                </div>
+                <div class="stats-card p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-rose-500 mb-2" id="favoriteMood">😊</div>
+                    <div class="text-gray-600">最常心情</div>
+                </div>
+                <div class="stats-card p-6 rounded-lg text-center">
+                    <div class="text-3xl font-bold text-rose-500 mb-2" id="totalWords">0</div>
+                    <div class="text-gray-600">总字数</div>
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
+                <div class="flex items-center space-x-4">
+                    <button id="addMemoryBtn" class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors">
+                        ➕ 添加回忆
+                    </button>
+                    <select id="filterMood" class="px-4 py-2 border border-rose-300 rounded-lg bg-white">
+                        <option value="">所有心情</option>
+                        <option value="😊">开心</option>
+                        <option value="😢">难过</option>
+                        <option value="😍">喜爱</option>
+                        <option value="🤔">思考</option>
+                        <option value="😌">平静</option>
+                        <option value="🥰">幸福</option>
+                    </select>
+                    <select id="sortSelect" class="px-4 py-2 border border-rose-300 rounded-lg bg-white">
+                        <option value="date-desc">最新优先</option>
+                        <option value="date-asc">最早优先</option>
+                        <option value="title">按标题排序</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <input type="text" id="searchInput" placeholder="搜索回忆..." class="px-4 py-2 border border-rose-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-rose-400">
+                    <button id="searchBtn" class="bg-rose-400 hover:bg-rose-500 text-white px-4 py-2 rounded-lg transition-colors">
+                        🔍
+                    </button>
+                </div>
+            </div>
+
+            <!-- 回忆时间轴 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 时间轴 -->
+                <div class="lg:col-span-2">
+                    <div id="memoriesTimeline" class="space-y-6">
+                        <!-- 回忆卡片将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <!-- 空状态 -->
+                    <div id="emptyState" class="text-center py-20 hidden">
+                        <div class="w-24 h-24 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="text-4xl">💭</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">还没有回忆记录</h3>
+                        <p class="text-gray-600 mb-6">开始记录您珍贵的回忆吧</p>
+                        <button class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors" onclick="showAddMemoryModal()">
+                            添加第一个回忆
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 侧边栏 -->
+                <div class="space-y-6">
+                    <!-- 心情分布图 -->
+                    <div class="stats-card p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">心情分布</h3>
+                        <div id="moodChart" style="height: 200px;"></div>
+                    </div>
+
+                    <!-- 标签云 -->
+                    <div class="stats-card p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">常用标签</h3>
+                        <div id="tagCloud" class="flex flex-wrap gap-2">
+                            <!-- 标签将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 快速添加 -->
+                    <div class="stats-card p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">快速操作</h3>
+                        <div class="space-y-3">
+                            <button class="w-full text-left px-4 py-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors" onclick="showAddMemoryModal()">
+                                ➕ 添加新回忆
+                            </button>
+                            <button class="w-full text-left px-4 py-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors" onclick="exportMemories()">
+                                📤 导出回忆
+                            </button>
+                            <button class="w-full text-left px-4 py-2 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors" onclick="importMemories()">
+                                📥 导入回忆
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 添加回忆模态框 -->
+    <div id="addMemoryModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-semibold text-gray-800">添加新回忆</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <form id="memoryForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">回忆标题</label>
+                        <input type="text" id="memoryTitle" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400" placeholder="给你的回忆起个标题..." required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">回忆日期</label>
+                        <input type="date" id="memoryDate" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">心情</label>
+                        <div class="mood-selector" id="moodSelector">
+                            <div class="mood-option" data-mood="😊">😊 开心</div>
+                            <div class="mood-option" data-mood="😢">😢 难过</div>
+                            <div class="mood-option" data-mood="😍">😍 喜爱</div>
+                            <div class="mood-option" data-mood="🤔">🤔 思考</div>
+                            <div class="mood-option" data-mood="😌">😌 平静</div>
+                            <div class="mood-option" data-mood="🥰">🥰 幸福</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">回忆内容</label>
+                        <textarea id="memoryContent" rows="6" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none" placeholder="记录下这个美好的时刻..." required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">标签</label>
+                        <div class="tag-input" id="tagInput">
+                            <input type="text" id="tagInputField" placeholder="输入标签后按回车" class="flex-1 border-none outline-none bg-transparent min-w-24">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">输入标签后按回车键添加</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 pt-4">
+                        <button type="submit" class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-2 rounded-full transition-colors">
+                            保存回忆
+                        </button>
+                        <button type="button" id="cancelBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-full transition-colors">
+                            取消
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 px-4 mt-12">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="text-gray-300">© 2024 永恒的爱 - 用心记录每一份美好</p>
+            <p class="text-sm text-gray-400 mt-2">愿爱永存，回忆常在</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let memories = [];
+        let currentTags = [];
+        let moodChart = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMemories();
+        });
+
+        function initializeMemories() {
+            loadMemories();
+            setupEventListeners();
+            initializeMoodChart();
+            updateStats();
+            renderMemories();
+            updateTagCloud();
+        }
+
+        // 加载回忆
+        function loadMemories() {
+            memories = JSON.parse(localStorage.getItem('memorialMemories') || '[]');
+            
+            // 添加示例数据（如果没有数据）
+            if (memories.length === 0) {
+                const sampleMemories = [
+                    {
+                        id: generateId(),
+                        title: '第一次相遇',
+                        date: '2023-03-15',
+                        content: '那天阳光正好，你在咖啡馆的角落里看书，阳光透过窗户洒在你的头发上，那一刻我知道我遇到了生命中最重要的人。',
+                        mood: '😍',
+                        tags: ['相遇', '咖啡馆', '阳光'],
+                        createdAt: Date.now() - 86400000 * 30
+                    },
+                    {
+                        id: generateId(),
+                        title: '共同的旅行',
+                        date: '2023-07-20',
+                        content: '我们一起去了海边，看着日出日落，听着海浪的声音。那些美好的时光，现在回想起来依然让人心动。',
+                        mood: '🥰',
+                        tags: ['旅行', '海边', '日出'],
+                        createdAt: Date.now() - 86400000 * 15
+                    },
+                    {
+                        id: generateId(),
+                        title: '温馨的日常',
+                        date: '2023-12-01',
+                        content: '即使是平凡的日子，有你的陪伴也变得特别。我们一起做饭、看电影、聊天到深夜，这些简单的幸福是最珍贵的回忆。',
+                        mood: '😊',
+                        tags: ['日常', '做饭', '电影'],
+                        createdAt: Date.now() - 86400000 * 5
+                    }
+                ];
+                
+                memories = sampleMemories;
+                saveMemories();
+            }
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 添加回忆按钮
+            document.getElementById('addMemoryBtn').addEventListener('click', showAddMemoryModal);
+            
+            // 模态框
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+            
+            // 表单提交
+            document.getElementById('memoryForm').addEventListener('submit', saveMemory);
+            
+            // 心情选择
+            document.querySelectorAll('.mood-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 标签输入
+            document.getElementById('tagInputField').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    e.preventDefault();
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+            
+            // 搜索
+            document.getElementById('searchBtn').addEventListener('click', searchMemories);
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchMemories();
+                }
+            });
+            
+            // 筛选和排序
+            document.getElementById('filterMood').addEventListener('change', filterMemories);
+            document.getElementById('sortSelect').addEventListener('change', sortMemories);
+            
+            // 点击模态框背景关闭
+            document.getElementById('addMemoryModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        }
+
+        // 显示添加回忆模态框
+        function showAddMemoryModal() {
+            // 重置表单
+            document.getElementById('memoryForm').reset();
+            document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+            currentTags = [];
+            updateTagDisplay();
+            
+            // 设置默认日期为今天
+            document.getElementById('memoryDate').value = new Date().toISOString().split('T')[0];
+            
+            // 显示模态框
+            document.getElementById('addMemoryModal').classList.remove('hidden');
+            
+            // 添加动画
+            anime({
+                targets: '#addMemoryModal .bg-white',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            anime({
+                targets: '#addMemoryModal .bg-white',
+                scale: [1, 0.8],
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInQuart',
+                complete: () => {
+                    document.getElementById('addMemoryModal').classList.add('hidden');
+                }
+            });
+        }
+
+        // 添加标签
+        function addTag(tagText) {
+            if (!currentTags.includes(tagText) && currentTags.length < 10) {
+                currentTags.push(tagText);
+                updateTagDisplay();
+            }
+        }
+
+        // 移除标签
+        function removeTag(tagText) {
+            currentTags = currentTags.filter(tag => tag !== tagText);
+            updateTagDisplay();
+        }
+
+        // 更新标签显示
+        function updateTagDisplay() {
+            const tagInput = document.getElementById('tagInput');
+            const inputField = document.getElementById('tagInputField');
+            
+            // 清除现有标签
+            tagInput.querySelectorAll('.tag-chip').forEach(chip => chip.remove());
+            
+            // 添加标签
+            currentTags.forEach(tag => {
+                const chip = document.createElement('div');
+                chip.className = 'tag-chip';
+                chip.innerHTML = `
+                    ${tag}
+                    <button type="button" onclick="removeTag('${tag}')">&times;</button>
+                `;
+                tagInput.insertBefore(chip, inputField);
+            });
+        }
+
+        // 保存回忆
+        function saveMemory(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('memoryTitle').value.trim();
+            const date = document.getElementById('memoryDate').value;
+            const content = document.getElementById('memoryContent').value.trim();
+            const selectedMood = document.querySelector('.mood-option.selected');
+            
+            if (!title || !date || !content) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            const memory = {
+                id: generateId(),
+                title: title,
+                date: date,
+                content: content,
+                mood: selectedMood ? selectedMood.dataset.mood : '😊',
+                tags: currentTags.join(','),
+                createdAt: Date.now()
+            };
+            
+            memories.unshift(memory);
+            saveMemories();
+            
+            // 更新界面
+            updateStats();
+            renderMemories();
+            updateTagCloud();
+            updateMoodChart();
+            
+            closeModal();
+            showToast('回忆已保存');
+        }
+
+        // 渲染回忆
+        function renderMemories() {
+            const timeline = document.getElementById('memoriesTimeline');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (memories.length === 0) {
+                timeline.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            timeline.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            timeline.innerHTML = '';
+            
+            memories.forEach((memory, index) => {
+                const card = createMemoryCard(memory, index);
+                timeline.appendChild(card);
+            });
+        }
+
+        // 创建回忆卡片
+        function createMemoryCard(memory, index) {
+            const card = document.createElement('div');
+            card.className = 'timeline-item memory-card p-6 rounded-lg floating';
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            const formattedDate = new Date(memory.date).toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            const tags = memory.tags ? memory.tags.split(',').filter(tag => tag.trim()) : [];
+            
+            card.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">${memory.title}</h3>
+                        <div class="flex items-center space-x-4 mb-3">
+                            <span class="text-sm text-gray-600">${formattedDate}</span>
+                            <span class="text-lg">${memory.mood}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="text-gray-400 hover:text-rose-500 transition-colors" onclick="editMemory('${memory.id}')" title="编辑">
+                            ✏️
+                        </button>
+                        <button class="text-gray-400 hover:text-red-500 transition-colors" onclick="deleteMemory('${memory.id}')" title="删除">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+                
+                <p class="text-gray-700 leading-relaxed mb-4">${memory.content}</p>
+                
+                ${tags.length > 0 ? `
+                    <div class="flex flex-wrap gap-2">
+                        ${tags.map(tag => `<span class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-sm">${tag.trim()}</span>`).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            return card;
+        }
+
+        // 编辑回忆
+        function editMemory(memoryId) {
+            const memory = memories.find(m => m.id === memoryId);
+            if (!memory) return;
+            
+            // 填充表单
+            document.getElementById('memoryTitle').value = memory.title;
+            document.getElementById('memoryDate').value = memory.date;
+            document.getElementById('memoryContent').value = memory.content;
+            
+            // 设置心情
+            document.querySelectorAll('.mood-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.mood === memory.mood);
+            });
+            
+            // 设置标签
+            currentTags = memory.tags ? memory.tags.split(',').filter(tag => tag.trim()) : [];
+            updateTagDisplay();
+            
+            // 显示模态框
+            showAddMemoryModal();
+            
+            // 修改保存逻辑以更新现有回忆
+            const originalSubmit = document.getElementById('memoryForm').onsubmit;
+            document.getElementById('memoryForm').onsubmit = function(e) {
+                e.preventDefault();
+                
+                const title = document.getElementById('memoryTitle').value.trim();
+                const date = document.getElementById('memoryDate').value;
+                const content = document.getElementById('memoryContent').value.trim();
+                const selectedMood = document.querySelector('.mood-option.selected');
+                
+                // 更新回忆
+                memory.title = title;
+                memory.date = date;
+                memory.content = content;
+                memory.mood = selectedMood ? selectedMood.dataset.mood : '😊';
+                memory.tags = currentTags.join(',');
+                
+                saveMemories();
+                updateStats();
+                renderMemories();
+                updateTagCloud();
+                updateMoodChart();
+                
+                closeModal();
+                showToast('回忆已更新');
+                
+                // 恢复原始提交处理程序
+                document.getElementById('memoryForm').onsubmit = originalSubmit;
+            };
+        }
+
+        // 删除回忆
+        function deleteMemory(memoryId) {
+            if (confirm('确定要删除这条回忆吗？')) {
+                memories = memories.filter(m => m.id !== memoryId);
+                saveMemories();
+                updateStats();
+                renderMemories();
+                updateTagCloud();
+                updateMoodChart();
+                showToast('回忆已删除');
+            }
+        }
+
+        // 搜索回忆
+        function searchMemories() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderMemories();
+                return;
+            }
+            
+            const filteredMemories = memories.filter(memory => 
+                memory.title.toLowerCase().includes(query) ||
+                memory.content.toLowerCase().includes(query) ||
+                memory.tags.toLowerCase().includes(query)
+            );
+            
+            renderFilteredMemories(filteredMemories, query);
+        }
+
+        // 筛选回忆
+        function filterMemories() {
+            const mood = document.getElementById('filterMood').value;
+            
+            if (!mood) {
+                renderMemories();
+                return;
+            }
+            
+            const filteredMemories = memories.filter(memory => memory.mood === mood);
+            renderFilteredMemories(filteredMemories);
+        }
+
+        // 排序回忆
+        function sortMemories() {
+            const sortBy = document.getElementById('sortSelect').value;
+            
+            switch (sortBy) {
+                case 'date-desc':
+                    memories.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'date-asc':
+                    memories.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+                case 'title':
+                    memories.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+            }
+            
+            renderMemories();
+        }
+
+        // 渲染筛选后的回忆
+        function renderFilteredMemories(filteredMemories, highlightQuery = '') {
+            const timeline = document.getElementById('memoriesTimeline');
+            timeline.innerHTML = '';
+            
+            if (filteredMemories.length === 0) {
+                timeline.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">🔍</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">未找到匹配的回忆</h3>
+                        <p class="text-gray-600">尝试使用其他关键词搜索</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filteredMemories.forEach((memory, index) => {
+                const card = createMemoryCard(memory, index);
+                
+                // 高亮搜索结果
+                if (highlightQuery) {
+                    const title = card.querySelector('h3');
+                    const content = card.querySelector('p');
+                    
+                    title.innerHTML = highlightText(title.textContent, highlightQuery);
+                    content.innerHTML = highlightText(content.textContent, highlightQuery);
+                }
+                
+                timeline.appendChild(card);
+            });
+        }
+
+        // 高亮文本
+        function highlightText(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+
+        // 初始化心情图表
+        function initializeMoodChart() {
+            const chartDom = document.getElementById('moodChart');
+            moodChart = echarts.init(chartDom);
+            updateMoodChart();
+        }
+
+        // 更新心情图表
+        function updateMoodChart() {
+            const moodCounts = {};
+            memories.forEach(memory => {
+                moodCounts[memory.mood] = (moodCounts[memory.mood] || 0) + 1;
+            });
+            
+            const data = Object.entries(moodCounts).map(([mood, count]) => ({
+                name: mood,
+                value: count
+            }));
+            
+            const option = {
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '70%',
+                    data: data,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    color: ['#E8B4B8', '#F0E68C', '#FFE4E1', '#DDA0DD', '#F5DEB3', '#E6E6FA']
+                }]
+            };
+            
+            moodChart.setOption(option);
+        }
+
+        // 更新标签云
+        function updateTagCloud() {
+            const tagCloud = document.getElementById('tagCloud');
+            const allTags = {};
+            
+            memories.forEach(memory => {
+                if (memory.tags) {
+                    memory.tags.split(',').forEach(tag => {
+                        const trimmedTag = tag.trim();
+                        if (trimmedTag) {
+                            allTags[trimmedTag] = (allTags[trimmedTag] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            
+            const sortedTags = Object.entries(allTags)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 20);
+            
+            tagCloud.innerHTML = '';
+            sortedTags.forEach(([tag, count]) => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-sm cursor-pointer hover:bg-rose-200 transition-colors';
+                tagElement.textContent = `${tag} (${count})`;
+                tagElement.addEventListener('click', () => {
+                    document.getElementById('searchInput').value = tag;
+                    searchMemories();
+                });
+                tagCloud.appendChild(tagElement);
+            });
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalMemories').textContent = memories.length;
+            
+            const thisMonth = new Date().getMonth();
+            const thisYear = new Date().getFullYear();
+            const thisMonthMemories = memories.filter(memory => {
+                const memoryDate = new Date(memory.date);
+                return memoryDate.getMonth() === thisMonth && memoryDate.getFullYear() === thisYear;
+            }).length;
+            document.getElementById('thisMonthMemories').textContent = thisMonthMemories;
+            
+            const moodCounts = {};
+            memories.forEach(memory => {
+                moodCounts[memory.mood] = (moodCounts[memory.mood] || 0) + 1;
+            });
+            const favoriteMood = Object.entries(moodCounts).reduce((a, b) => a[1] > b[1] ? a : b, ['😊', 0]);
+            document.getElementById('favoriteMood').textContent = favoriteMood[0];
+            
+            const totalWords = memories.reduce((sum, memory) => sum + memory.content.length, 0);
+            document.getElementById('totalWords').textContent = totalWords;
+        }
+
+        // 导出回忆
+        function exportMemories() {
+            const data = {
+                memories: memories,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `memories-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('回忆已导出');
+        }
+
+        // 导入回忆
+        function importMemories() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data.memories && Array.isArray(data.memories)) {
+                                memories = [...memories, ...data.memories];
+                                saveMemories();
+                                updateStats();
+                                renderMemories();
+                                updateTagCloud();
+                                updateMoodChart();
+                                showToast(`成功导入 ${data.memories.length} 条回忆`);
+                            } else {
+                                alert('文件格式不正确');
+                            }
+                        } catch (error) {
+                            alert('文件解析失败');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        // 保存回忆到本地存储
+        function saveMemories() {
+            localStorage.setItem('memorialMemories', JSON.stringify(memories));
+        }
+
+        // 生成唯一ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            anime({
+                targets: toast,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: toast,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    duration: 300,
+                    easing: 'easeInQuart',
+                    complete: () => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }
+                });
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

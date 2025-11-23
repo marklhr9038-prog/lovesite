@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片管理 - 永恒的爱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-pink: #FFE4E1;
+            --warm-gold: #F0E68C;
+            --rose-gold: #E8B4B8;
+            --cream: #FFFEF7;
+            --soft-gray: #F8F8FF;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--warm-gold) 100%);
+            min-height: 100vh;
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--rose-gold);
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area.dragover {
+            border-color: #E8B4B8;
+            background: rgba(232, 180, 184, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .photo-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(232, 180, 184, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(232, 180, 184, 0.4);
+        }
+        
+        .photo-card .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .photo-card:hover .overlay {
+            opacity: 1;
+        }
+        
+        .modal {
+            backdrop-filter: blur(10px);
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: var(--rose-gold);
+            transition: left 0.3s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-rose-200">
+        <div class="max-w-6xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-pink-300 to-rose-400 rounded-full"></div>
+                    <h1 class="text-xl font-bold text-gray-800" style="font-family: 'ZCOOL XiaoWei';">永恒的爱</h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="index.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">首页</a>
+                    <a href="photos.html" class="nav-link text-rose-500 font-medium">照片管理</a>
+                    <a href="memories.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">回忆记录</a>
+                    <a href="settings.html" class="nav-link text-gray-700 hover:text-rose-500 transition-colors">设置</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="pt-20 px-4 pb-12">
+        <div class="max-w-6xl mx-auto">
+            <!-- 页面标题 -->
+            <div class="text-center mb-12 pt-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4" style="font-family: 'Noto Serif SC';">
+                    珍贵照片管理
+                </h1>
+                <p class="text-lg text-gray-600">
+                    上传、管理和展示您的美好回忆
+                </p>
+            </div>
+
+            <!-- 上传区域 -->
+            <div class="mb-12">
+                <div class="upload-area rounded-lg p-12 text-center" id="uploadArea">
+                    <div class="mb-6">
+                        <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">📸</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">上传照片</h3>
+                        <p class="text-gray-600 mb-4">拖拽照片到这里，或点击选择文件</p>
+                    </div>
+                    <input type="file" id="fileInput" class="hidden" multiple accept="image/*">
+                    <button id="selectFiles" class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors">
+                        选择照片
+                    </button>
+                </div>
+            </div>
+
+            <!-- 工具栏 -->
+            <div class="flex flex-wrap items-center justify-between mb-8 gap-4">
+                <div class="flex items-center space-x-4">
+                    <select id="sortSelect" class="px-4 py-2 border border-rose-300 rounded-lg bg-white">
+                        <option value="date">按日期排序</option>
+                        <option value="title">按标题排序</option>
+                        <option value="newest">最新上传</option>
+                        <option value="oldest">最早上传</option>
+                    </select>
+                    <select id="viewSelect" class="px-4 py-2 border border-rose-300 rounded-lg bg-white">
+                        <option value="grid">网格视图</option>
+                        <option value="list">列表视图</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">共 <span id="photoCount">0</span> 张照片</span>
+                    <button id="clearAll" class="text-red-500 hover:text-red-700 transition-colors">
+                        清空所有
+                    </button>
+                </div>
+            </div>
+
+            <!-- 照片网格 -->
+            <div id="photoGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- 照片卡片将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 空状态 -->
+            <div id="emptyState" class="text-center py-20 hidden">
+                <div class="w-24 h-24 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="text-4xl">🌸</span>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">还没有照片</h3>
+                <p class="text-gray-600 mb-6">开始上传您珍贵的回忆吧</p>
+                <button class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-3 rounded-full transition-colors" onclick="document.getElementById('fileInput').click()">
+                    上传第一张照片
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 照片详情模态框 -->
+    <div id="photoModal" class="fixed inset-0 bg-black/80 modal hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-semibold text-gray-800" id="modalTitle">照片详情</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <img id="modalImage" src="" alt="" class="w-full h-80 object-cover rounded-lg">
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">照片标题</label>
+                            <input type="text" id="editTitle" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">拍摄日期</label>
+                            <input type="date" id="editDate" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">照片描述</label>
+                            <textarea id="editDescription" rows="4" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">标签</label>
+                            <input type="text" id="editTags" placeholder="用逗号分隔多个标签" class="w-full px-3 py-2 border border-rose-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400">
+                        </div>
+                        <div class="flex items-center space-x-4 pt-4">
+                            <button id="saveChanges" class="bg-rose-400 hover:bg-rose-500 text-white px-6 py-2 rounded-full transition-colors">
+                                保存更改
+                            </button>
+                            <button id="deletePhoto" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full transition-colors">
+                                删除照片
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全屏预览模态框 -->
+    <div id="fullscreenModal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center">
+        <img id="fullscreenImage" src="" alt="" class="max-w-full max-h-full object-contain">
+        <button id="closeFullscreen" class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300">&times;</button>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8 px-4 mt-12">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="text-gray-300">© 2024 永恒的爱 - 用心记录每一份美好</p>
+            <p class="text-sm text-gray-400 mt-2">愿爱永存，回忆常在</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let photos = [];
+        let currentPhotoId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePhotoManager();
+        });
+
+        function initializePhotoManager() {
+            loadPhotos();
+            setupEventListeners();
+            setupDragAndDrop();
+        }
+
+        // 加载照片
+        function loadPhotos() {
+            photos = JSON.parse(localStorage.getItem('memorialPhotos') || '[]');
+            renderPhotos();
+            updatePhotoCount();
+        }
+
+        // 渲染照片
+        function renderPhotos() {
+            const grid = document.getElementById('photoGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (photos.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            grid.innerHTML = '';
+            
+            photos.forEach(photo => {
+                const card = createPhotoCard(photo);
+                grid.appendChild(card);
+            });
+        }
+
+        // 创建照片卡片
+        function createPhotoCard(photo) {
+            const card = document.createElement('div');
+            card.className = 'photo-card rounded-lg overflow-hidden cursor-pointer floating';
+            card.style.animationDelay = `${Math.random() * 2}s`;
+            
+            const uploadDate = new Date(photo.uploadDate || Date.now()).toLocaleDateString();
+            
+            card.innerHTML = `
+                <div class="relative">
+                    <img src="${photo.src}" alt="${photo.title}" class="w-full h-48 object-cover">
+                    <div class="overlay">
+                        <div class="flex space-x-3">
+                            <button class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors" onclick="event.stopPropagation(); editPhoto('${photo.id}')">
+                                ✏️
+                            </button>
+                            <button class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors" onclick="event.stopPropagation(); viewFullscreen('${photo.src}')">
+                                🔍
+                            </button>
+                            <button class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors" onclick="event.stopPropagation(); deletePhotoConfirm('${photo.id}')">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-800 mb-1">${photo.title}</h3>
+                    <p class="text-sm text-gray-600 mb-2">${photo.description}</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>${photo.date || '未知日期'}</span>
+                        <span>上传于 ${uploadDate}</span>
+                    </div>
+                    ${photo.tags ? `<div class="mt-2 flex flex-wrap gap-1">${photo.tags.split(',').map(tag => `<span class="bg-rose-100 text-rose-600 px-2 py-1 rounded-full text-xs">${tag.trim()}</span>`).join('')}</div>` : ''}
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                editPhoto(photo.id);
+            });
+            
+            return card;
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 文件选择
+            document.getElementById('selectFiles').addEventListener('click', () => {
+                document.getElementById('fileInput').click();
+            });
+            
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            
+            // 排序和视图
+            document.getElementById('sortSelect').addEventListener('change', handleSort);
+            document.getElementById('viewSelect').addEventListener('change', handleViewChange);
+            
+            // 清空所有
+            document.getElementById('clearAll').addEventListener('click', clearAllPhotos);
+            
+            // 模态框
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('saveChanges').addEventListener('click', savePhotoChanges);
+            document.getElementById('deletePhoto').addEventListener('click', deleteCurrentPhoto);
+            
+            document.getElementById('closeFullscreen').addEventListener('click', closeFullscreen);
+            
+            // 点击模态框背景关闭
+            document.getElementById('photoModal').addEventListener('click', (e) => {
+                if (e.target.id === 'photoModal') {
+                    closeModal();
+                }
+            });
+            
+            document.getElementById('fullscreenModal').addEventListener('click', (e) => {
+                if (e.target.id === 'fullscreenModal') {
+                    closeFullscreen();
+                }
+            });
+        }
+
+        // 设置拖拽上传
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight() {
+                uploadArea.classList.add('dragover');
+            }
+            
+            function unhighlight() {
+                uploadArea.classList.remove('dragover');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+        }
+
+        // 处理文件选择
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+
+        // 处理文件
+        function handleFiles(files) {
+            [...files].forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    processImageFile(file);
+                }
+            });
+        }
+
+        // 处理图片文件
+        function processImageFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const photo = {
+                    id: generateId(),
+                    src: e.target.result,
+                    title: file.name.replace(/\.[^/.]+$/, ""), // 移除文件扩展名
+                    description: '美好的回忆',
+                    date: new Date().toISOString().split('T')[0],
+                    uploadDate: Date.now(),
+                    tags: ''
+                };
+                
+                photos.push(photo);
+                savePhotos();
+                renderPhotos();
+                updatePhotoCount();
+                
+                // 添加动画
+                const newCard = document.querySelector(`[onclick*="${photo.id}"]`).closest('.photo-card');
+                anime({
+                    targets: newCard,
+                    scale: [0, 1],
+                    opacity: [0, 1],
+                    duration: 600,
+                    easing: 'easeOutBack'
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 编辑照片
+        function editPhoto(photoId) {
+            const photo = photos.find(p => p.id === photoId);
+            if (!photo) return;
+            
+            currentPhotoId = photoId;
+            
+            document.getElementById('modalTitle').textContent = photo.title;
+            document.getElementById('modalImage').src = photo.src;
+            document.getElementById('editTitle').value = photo.title;
+            document.getElementById('editDate').value = photo.date || '';
+            document.getElementById('editDescription').value = photo.description;
+            document.getElementById('editTags').value = photo.tags || '';
+            
+            document.getElementById('photoModal').classList.remove('hidden');
+            
+            // 添加打开动画
+            anime({
+                targets: '#photoModal .bg-white',
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            anime({
+                targets: '#photoModal .bg-white',
+                scale: [1, 0.8],
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInQuart',
+                complete: () => {
+                    document.getElementById('photoModal').classList.add('hidden');
+                }
+            });
+        }
+
+        // 保存照片更改
+        function savePhotoChanges() {
+            if (!currentPhotoId) return;
+            
+            const photo = photos.find(p => p.id === currentPhotoId);
+            if (!photo) return;
+            
+            photo.title = document.getElementById('editTitle').value;
+            photo.date = document.getElementById('editDate').value;
+            photo.description = document.getElementById('editDescription').value;
+            photo.tags = document.getElementById('editTags').value;
+            
+            savePhotos();
+            renderPhotos();
+            closeModal();
+            
+            // 显示保存成功提示
+            showToast('照片信息已保存');
+        }
+
+        // 删除当前照片
+        function deleteCurrentPhoto() {
+            if (!currentPhotoId) return;
+            
+            if (confirm('确定要删除这张照片吗？')) {
+                photos = photos.filter(p => p.id !== currentPhotoId);
+                savePhotos();
+                renderPhotos();
+                updatePhotoCount();
+                closeModal();
+                
+                showToast('照片已删除');
+            }
+        }
+
+        // 删除照片确认
+        function deletePhotoConfirm(photoId) {
+            if (confirm('确定要删除这张照片吗？')) {
+                photos = photos.filter(p => p.id !== photoId);
+                savePhotos();
+                renderPhotos();
+                updatePhotoCount();
+                
+                showToast('照片已删除');
+            }
+        }
+
+        // 全屏查看
+        function viewFullscreen(src) {
+            document.getElementById('fullscreenImage').src = src;
+            document.getElementById('fullscreenModal').classList.remove('hidden');
+        }
+
+        // 关闭全屏
+        function closeFullscreen() {
+            document.getElementById('fullscreenModal').classList.add('hidden');
+        }
+
+        // 处理排序
+        function handleSort() {
+            const sortBy = document.getElementById('sortSelect').value;
+            
+            switch (sortBy) {
+                case 'date':
+                    photos.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'title':
+                    photos.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                case 'newest':
+                    photos.sort((a, b) => b.uploadDate - a.uploadDate);
+                    break;
+                case 'oldest':
+                    photos.sort((a, b) => a.uploadDate - b.uploadDate);
+                    break;
+            }
+            
+            renderPhotos();
+        }
+
+        // 处理视图切换
+        function handleViewChange() {
+            const view = document.getElementById('viewSelect').value;
+            const grid = document.getElementById('photoGrid');
+            
+            if (view === 'list') {
+                grid.className = 'space-y-4';
+            } else {
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+            }
+            
+            renderPhotos();
+        }
+
+        // 清空所有照片
+        function clearAllPhotos() {
+            if (confirm('确定要删除所有照片吗？此操作不可恢复。')) {
+                photos = [];
+                savePhotos();
+                renderPhotos();
+                updatePhotoCount();
+                showToast('所有照片已清空');
+            }
+        }
+
+        // 保存照片到本地存储
+        function savePhotos() {
+            localStorage.setItem('memorialPhotos', JSON.stringify(photos));
+        }
+
+        // 更新照片计数
+        function updatePhotoCount() {
+            document.getElementById('photoCount').textContent = photos.length;
+        }
+
+        // 生成唯一ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            anime({
+                targets: toast,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuart'
+            });
+            
+            setTimeout(() => {
+                anime({
+                    targets: toast,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    duration: 300,
+                    easing: 'easeInQuart',
+                    complete: () => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }
+                });
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
